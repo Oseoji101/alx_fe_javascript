@@ -13,30 +13,18 @@ const newQuoteText = document.getElementById("newQuoteText");
 const newQuoteCategory = document.getElementById("newQuoteCategory");
 
 // 3. Show a random quote
-function showRandomQuote() {
+function displayRandomQuote() {
   const randomIndex = Math.floor(Math.random() * quotes.length);
   const quote = quotes[randomIndex];
   quoteDisplay.textContent = `"${quote.text}" — ${quote.category}`;
 }
-
-// 4. Add a new quote
-function addQuote() {
-  const text = newQuoteText.value.trim();
-  const category = newQuoteCategory.value.trim();
-
-  if (text && category) {
-    quotes.push({ text, category });
-    newQuoteText.value = "";
-    newQuoteCategory.value = "";
-    alert("Quote added successfully!");
-  } else {
-    alert("Please enter both a quote and a category.");
-  }
-}
-
-// 5. Event listeners
-newQuoteBtn.addEventListener("click", showRandomQuote);
-addQuoteBtn.addEventListener("click", addQuote);
-
 // 6. Show a quote immediately on page load
+displayRandomQuote();
+newQuoteBtn.addEventListener("click", displayRandomQuote);
+
+function showRandomQuote() {
+  const newQuote = newQuoteText.Value.trim();
+  const newCategory = newQuoteCategory.Value.trim();
+} 
 showRandomQuote();
+addQuoteBtn.addEventListener("click", showRandomQuote);
