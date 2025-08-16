@@ -25,6 +25,35 @@ function showRandomQuote() {
   `;
 }
 
+function addQuote(e) {
+  // If this was triggered by a form submit, prevent page reload
+  if (e) e.preventDefault();
+
+  const textInput = document.getElementById("newQuoteText");
+  const categoryInput = document.getElementById("newQuoteCategory");
+
+  const text = textInput.value.trim();
+  const category = categoryInput.value.trim();
+
+  if (!text || !category) {
+    alert("Please fill in both fields!");
+    return;
+  }
+
+  // Add new quote to array
+  quotes.push({ text, category });
+
+  // Clear input fields
+  textInput.value = "";
+  categoryInput.value = "";
+
+  // Show the newly added quote immediately
+  quoteDisplay.innerHTML = `
+    <p>"${text}"</p>
+    <p><em>— ${category}</em></p>
+  `;
+}
+
 /**
  * createAddQuoteForm()
  * Dynamically creates a form (inputs + button) in the DOM
