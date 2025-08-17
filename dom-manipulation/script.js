@@ -99,23 +99,6 @@ function createAddQuoteForm() {
   // Insert into the DOM (just after the "Show New Quote" button)
   newQuoteBtn.insertAdjacentElement("afterend", form);
 }
-// ---- Events ----
-newQuoteBtn.addEventListener("click", showRandomQuote);
-
-// ---- Initialize ----
-createAddQuoteForm();
-
-// If user has a last viewed quote in sessionStorage, show that first
-const lastQuote = JSON.parse(sessionStorage.getItem("lastViewedQuote"));
-if (lastQuote) {
-  quoteDisplay.innerHTML = `
-    <p>"${lastQuote.text}"</p>
-    <p><em>— ${lastQuote.category}</em></p>
-  `;
-} else {
-  showRandomQuote();
-}
-
 
 // Export quotes as JSON
 function exportToJsonFile() {
@@ -155,6 +138,18 @@ function importFromJsonFile(event) {
 
 // ---- Event Listeners ----
 
-document.getElementById("exportBtn").addEventListener("click", exportToJsonFile);
-document.getElementById("importFile").addEventListener("change", importFromJsonFile);
+newQuoteBtn.addEventListener("click", showRandomQuote);
+document.getElementById("exportQuotes").addEventListener("click", exportToJsonFile);
+
+// Init
+createAddQuoteForm();
+const lastQuote = JSON.parse(sessionStorage.getItem("lastViewedQuote"));
+if (lastQuote) {
+  quoteDisplay.innerHTML = `
+    <p>"${lastQuote.text}"</p>
+    <p><em>— ${lastQuote.category}</em></p>
+  `;
+} else {
+  showRandomQuote();
+}
 
