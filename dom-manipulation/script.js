@@ -44,6 +44,8 @@ function addQuote(e) {
 
   // Add new quote to array
   quotes.push({ text, category });
+
+  // Persist in localStorage
   localStorage.setItem("quotes", JSON.stringify(quotes));
 
 
@@ -92,9 +94,29 @@ function createAddQuoteForm() {
   form.appendChild(categoryInput);
   form.appendChild(addButton);
 
+  form.addEventListener("submit", addQuote);
+
   // Insert into the DOM (just after the "Show New Quote" button)
   newQuoteBtn.insertAdjacentElement("afterend", form);
 }
+// ---- Events ----
+newQuoteBtn.addEventListener("click", showRandomQuote);
+
+// ---- Initialize ----
+createAddQuoteForm();
+
+// If user has a last viewed quote in sessionStorage, show that first
+const lastQuote = JSON.parse(sessionStorage.getItem("lastViewedQuote"));
+if (lastQuote) {
+  quoteDisplay.innerHTML = `
+    <p>"${lastQuote.text}"</p>
+    <p><em>— ${lastQuote.category}</em></p>
+  `;
+} else {
+  showRandomQuote();
+}
+
+
 // Export quotes as JSON
 function exportToJsonFile() {
   const jsonStr = JSON.stringify(quotes, null, 2);
@@ -132,20 +154,7 @@ function importFromJsonFile(event) {
 }
 
 // ---- Event Listeners ----
-newQuoteBtn.addEventListener("click", showRandomQuote);
+
 document.getElementById("exportBtn").addEventListener("click", exportToJsonFile);
 document.getElementById("importFile").addEventListener("change", importFromJsonFile);
 
-// ---- Initialize ----
-createAddQuoteForm();
-
-// If user has a last viewed quote in sessionStorage, show that first
-const lastQuote = JSON.parse(sessionStorage.getItem("lastViewedQuote"));
-if (lastQuote) {
-  quoteDisplay.innerHTML = `
-    <p>"${lastQuote.text}"</p>
-    <p><em>— ${lastQuote.category}</em></p>
-  `;
-} else {
-  showRandomQuote();
-}
