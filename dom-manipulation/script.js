@@ -268,7 +268,7 @@ function addQuote(e) {
   }
 
   // Add new quote to array
-  quotes.push({ text, category });
+  quotes.push({ text, category, lastModified: Date.now()});
 
   // Persist in localStorage
   localStorage.setItem("quotes", JSON.stringify(quotes));
