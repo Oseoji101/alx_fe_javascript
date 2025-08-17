@@ -23,6 +23,8 @@ function showRandomQuote() {
     <p>"${quote.text}"</p>
     <p><em>— ${quote.category}</em></p>
   `;
+  // Save last viewed quote in sessionStorage
+  sessionStorage.setItem("lastViewedQuote", JSON.stringify(quote));
 }
 
 function addQuote(e) {
@@ -42,6 +44,8 @@ function addQuote(e) {
 
   // Add new quote to array
   quotes.push({ text, category });
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+
 
   // Clear input fields
   textInput.value = "";
@@ -91,10 +95,57 @@ function createAddQuoteForm() {
   // Insert into the DOM (just after the "Show New Quote" button)
   newQuoteBtn.insertAdjacentElement("afterend", form);
 }
+// Export quotes as JSON
+function exportToJsonFile() {
+  const jsonStr = JSON.stringify(quotes, null, 2);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
 
-// Attach event for "Show New Quote" button
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+// Import quotes from JSON file
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function(e) {
+    try {
+      const importedQuotes = JSON.parse(e.target.result);
+      if (!Array.isArray(importedQuotes)) throw new Error("Invalid JSON format");
+
+      quotes.push(...importedQuotes);
+      localStorage.setItem("quotes", JSON.stringify(quotes));
+
+      alert("Quotes imported successfully!");
+    } catch (error) {
+      alert("Failed to import quotes: " + error.message);
+    }
+  };
+
+  if (event.target.files.length > 0) {
+    fileReader.readAsText(event.target.files[0]);
+  }
+}
+
+// ---- Event Listeners ----
 newQuoteBtn.addEventListener("click", showRandomQuote);
+document.getElementById("exportBtn").addEventListener("click", exportToJsonFile);
+document.getElementById("importFile").addEventListener("change", importFromJsonFile);
 
-// On page load: show one random quote & create the add-quote form
-showRandomQuote();
+// ---- Initialize ----
 createAddQuoteForm();
+
+// If user has a last viewed quote in sessionStorage, show that first
+const lastQuote = JSON.parse(sessionStorage.getItem("lastViewedQuote"));
+if (lastQuote) {
+  quoteDisplay.innerHTML = `
+    <p>"${lastQuote.text}"</p>
+    <p><em>— ${lastQuote.category}</em></p>
+  `;
+} else {
+  showRandomQuote();
+}
