@@ -9,6 +9,10 @@ let quotes = [
 const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn  = document.getElementById("newQuote");
 
+// ----- Helper: Save to localStorage -----
+function saveQuotes() {
+  localStorage.setItem("quotes", JSON.stringify(quotes)); // explicit
+}
 /**
  * showRandomQuote()
  * Picks a random quote object from the quotes array
@@ -58,6 +62,7 @@ function addQuote(e) {
     <p>"${text}"</p>
     <p><em>— ${category}</em></p>
   `;
+  showRandomQuote();
 }
 
 /**
@@ -139,15 +144,14 @@ function importFromJsonFile(event) {
 // ---- Event Listeners ----
 
 newQuoteBtn.addEventListener("click", showRandomQuote);
-document.getElementById("exportQuotes").addEventListener("click", exportToJsonFile);
 
-// Init
-createAddQuoteForm();
-const lastQuote = JSON.parse(sessionStorage.getItem("lastViewedQuote"));
+// ----- On Page Load -----
+let lastQuote = sessionStorage.getItem("lastViewedQuote"); // explicit
 if (lastQuote) {
+  const quote = JSON.parse(lastQuote);
   quoteDisplay.innerHTML = `
-    <p>"${lastQuote.text}"</p>
-    <p><em>— ${lastQuote.category}</em></p>
+    <p>"${quote.text}"</p>
+    <p><em>— ${quote.category}</em></p>
   `;
 } else {
   showRandomQuote();
