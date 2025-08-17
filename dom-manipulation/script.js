@@ -15,10 +15,10 @@ if (storedQuotes) {
 const SERVER_URL = "https://jsonplaceholder.typicode.com/posts"; // placeholder server
 
 /**
- * fetchServerQuotes()
+ * fetchQuotesFromServer
  * Fetches quotes from server and updates local storage
  */
-async function fetchServerQuotes() {
+async function fetchQuotesFromServer() {
   try {
     const response = await fetch(SERVER_URL);
     if (!response.ok) throw new Error("Failed to fetch quotes from server");
@@ -30,18 +30,63 @@ async function fetchServerQuotes() {
       lastModified: item.lastModified || Date.now()
     }));
 
-    resolveConflicts(serverQuotes);
+    syncQuotes(serverQuotes);
 
   } catch (error) {
     console.error("Error fetching server quotes:", error);
   }
 }
 
+
+function syncQuotes(serverQuotes) {
+  let updated = false;
+
+  serverQuotes.forEach(sq => {
+    const localIndex = quotes.findIndex(lq => lq.text === sq.text);
+
+    if (localIndex === -1) {
+      // New quote from server
+      quotes.push({ ...sq, lastModified: Date.now() });
+      updated = true;
+    } else {
+      const localQuote = quotes[localIndex];
+      if (!localQuote.lastModified || sq.lastModified > localQuote.lastModified) {
+        // Server version is newer
+        quotes[localIndex] = { ...sq };
+        updated = true;
+      }
+    }
+  });
+
+  if (updated) {
+    saveQuotes();
+    populateCategories();
+    filterQuotes();
+    notifyUser("Quotes updated from server!");
+    console.log("Conflicts resolved and quotes updated.");
+  }
+}
+
+async function postQuoteToServer(quote) {
+  try {
+    const response = await fetch(SERVER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(quote)
+    });
+    if (!response.ok) throw new Error("Failed to post quote to server");
+    const data = await response.json();
+    console.log("Quote posted successfully:", data);
+  } catch (error) {
+    console.error("Error posting quote:", error);
+  }
+}
+
 // Initial fetch on page load
-fetchServerQuotes();
+fetchQuotesFromServer();
 
 // Periodic sync every 30 seconds
-setInterval(fetchServerQuotes, 30000);
+setInterval(fetchQuotesFromServer, 30000);
 
 /**
  * notifyUser(message)
