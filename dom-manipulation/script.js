@@ -92,6 +92,70 @@ if (lastQuote) {
 }
 
 
+
+
+
+// ----- Step 1: Populate Categories Dropdown -----
+function populateCategories() {
+  const categoryFilter = document.getElementById("categoryFilter");
+
+  // Clear existing options except "All Categories"
+  categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
+
+  // Create a Set to store unique categories
+  const categories = new Set(quotes.map(q => q.category));
+
+  // Add each category as an option
+  categories.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+
+  // Restore last selected filter from localStorage
+  const lastFilter = localStorage.getItem("lastSelectedCategory");
+  if (lastFilter) {
+    categoryFilter.value = lastFilter;
+  }
+}
+
+// ----- Step 2: Filter Quotes Based on Selected Category -----
+function filterQuotes() {
+  const categoryFilter = document.getElementById("categoryFilter");
+  const selectedCategory = categoryFilter.value;
+
+  // Save selected filter in localStorage
+  localStorage.setItem("lastSelectedCategory", selectedCategory);
+
+  // Filter quotes array
+  const filteredQuotes = selectedCategory === "all" 
+    ? quotes 
+    : quotes.filter(q => q.category === selectedCategory);
+
+  // Display a random quote from the filtered list
+  if (filteredQuotes.length > 0) {
+    const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+    const quote = filteredQuotes[randomIndex];
+
+    quoteDisplay.innerHTML = `
+      <p>"${quote.text}"</p>
+      <p><em>— ${quote.category}</em></p>
+    `;
+
+    // Save last viewed quote in sessionStorage
+    sessionStorage.setItem("lastViewedQuote", JSON.stringify(quote));
+  } else {
+    quoteDisplay.innerHTML = "<p>No quotes available for this category.</p>";
+  }
+}
+
+// ----- Initialize categories on page load -----
+populateCategories();
+
+
+
+
 function addQuote(e) {
   // If this was triggered by a form submit, prevent page reload
   if (e) e.preventDefault();
@@ -118,12 +182,21 @@ function addQuote(e) {
   textInput.value = "";
   categoryInput.value = "";
 
-  // Show the newly added quote immediately
-  quoteDisplay.innerHTML = `
-    <p>"${text}"</p>
-    <p><em>— ${category}</em></p>
-  `;
-  showRandomQuote();
+// Refresh categories in dropdown
+  populateCategories();
+
+  // Immediately show the newly added quote
+  const categoryFilter = document.getElementById("categoryFilter");
+  // If filter matches new quote category or "all", display it
+  if (categoryFilter.value === category || categoryFilter.value === "all") {
+    quoteDisplay.innerHTML = `
+      <p>"${text}"</p>
+      <p><em>— ${category}</em></p>
+    `;
+  } else {
+    // Otherwise, apply current filter
+    filterQuotes();
+  }
 }
 
 /**
