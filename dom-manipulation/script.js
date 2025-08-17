@@ -11,6 +11,102 @@ if (storedQuotes) {
   quotes = JSON.parse(storedQuotes);
 }
 
+// ----- Server Sync Setup -----
+const SERVER_URL = "https://jsonplaceholder.typicode.com/posts"; // placeholder server
+
+/**
+ * fetchServerQuotes()
+ * Fetches quotes from server and updates local storage
+ */
+async function fetchServerQuotes() {
+  try {
+    const response = await fetch(SERVER_URL);
+    if (!response.ok) throw new Error("Failed to fetch quotes from server");
+
+    const serverData = await response.json();
+    const serverQuotes = serverData.map(item => ({
+      text: item.title || "Untitled",
+      category: item.body || "General",
+      lastModified: item.lastModified || Date.now()
+    }));
+
+    resolveConflicts(serverQuotes);
+
+  } catch (error) {
+    console.error("Error fetching server quotes:", error);
+  }
+}
+
+// Initial fetch on page load
+fetchServerQuotes();
+
+// Periodic sync every 30 seconds
+setInterval(fetchServerQuotes, 30000);
+
+/**
+ * notifyUser(message)
+ * Displays a temporary notification to the user
+ */
+function notifyUser(message) {
+  let notification = document.getElementById("syncNotification");
+  if (!notification) {
+    notification = document.createElement("div");
+    notification.id = "syncNotification";
+    notification.style.position = "fixed";
+    notification.style.top = "10px";
+    notification.style.right = "10px";
+    notification.style.padding = "10px 15px";
+    notification.style.backgroundColor = "#007bff";
+    notification.style.color = "white";
+    notification.style.borderRadius = "5px";
+    notification.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+    notification.style.zIndex = "1000";
+    document.body.appendChild(notification);
+  }
+
+  notification.textContent = message;
+  notification.style.display = "block";
+
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, 4000);
+}
+
+/**
+ * resolveConflicts(serverQuotes)
+ * Updates local quotes with server data if newer or missing
+ */
+function resolveConflicts(serverQuotes) {
+  let updated = false;
+
+  serverQuotes.forEach(sq => {
+    const localIndex = quotes.findIndex(lq => lq.text === sq.text);
+
+    if (localIndex === -1) {
+      // New quote from server
+      quotes.push({ ...sq, lastModified: Date.now() });
+      updated = true;
+    } else {
+      const localQuote = quotes[localIndex];
+      if (!localQuote.lastModified || sq.lastModified > localQuote.lastModified) {
+        // Server version is newer
+        quotes[localIndex] = { ...sq };
+        updated = true;
+      }
+    }
+  });
+
+  if (updated) {
+    saveQuotes();
+    populateCategories();
+    filterQuotes();
+    notifyUser("Quotes updated from server!");
+    console.log("Conflicts resolved and quotes updated.");
+  }
+}
+
+
+
 // Grab existing DOM elements
 const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn  = document.getElementById("newQuote");
